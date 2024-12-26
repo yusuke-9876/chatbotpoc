@@ -54,29 +54,39 @@ def select_model():
     # スライダーを追加し、temperatureを0から2までの範囲で選択可能にする
     # 初期値は0.0、刻み幅は0.01とする
     temperature = st.sidebar.slider(
-        "Temperature:", min_value=0.0, max_value=2.0, value=0.0, step=0.01)
+        "Temperature:", min_value=0.0, max_value=2.0, value=0.0, step=0.01
+    )
 
     models = ("GPT-3.5", "GPT-4", "Claude 3.5 Sonnet", "Gemini 1.5 Pro")
     model = st.sidebar.radio("Choose a model:", models)
+
+    # ▼ OpenAIのAPIキーをSecretsから取得（無い場合は空文字になる想定）
+    openai_api_key = st.secrets.get("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
+", "")
+
     if model == "GPT-3.5":
         st.session_state.model_name = "gpt-3.5-turbo"
         return ChatOpenAI(
+            openai_api_key=openai_api_key,   # <-- ここで設定
             temperature=temperature,
             model_name=st.session_state.model_name
         )
     elif model == "GPT-4":
         st.session_state.model_name = "gpt-4o"
         return ChatOpenAI(
+            openai_api_key=openai_api_key,   # <-- ここで設定
             temperature=temperature,
             model_name=st.session_state.model_name
         )
     elif model == "Claude 3.5 Sonnet":
+        from langchain_anthropic import ChatAnthropic  # 必要に応じてインポート
         st.session_state.model_name = "claude-3-5-sonnet-20240620"
         return ChatAnthropic(
             temperature=temperature,
             model_name=st.session_state.model_name
         )
     elif model == "Gemini 1.5 Pro":
+        from langchain_google import ChatGoogleGenerativeAI  # 必要に応じてインポート
         st.session_state.model_name = "gemini-1.5-pro-latest"
         return ChatGoogleGenerativeAI(
             temperature=temperature,
@@ -99,11 +109,11 @@ def get_message_counts(text):
         return st.session_state.llm.get_num_tokens(text)
     else:
         # Claude 3 はトークナイザーを公開していないので、tiktoken を使ってトークン数をカウント
-        # これは正確なトークン数ではないが、大体のトークン数をカウントすることができる
         if "gpt" in st.session_state.model_name:
             encoding = tiktoken.encoding_for_model(st.session_state.model_name)
         else:
-            encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")  # 仮のものを利用
+            # Claude やその他モデルの場合は仮で "gpt-3.5-turbo" のエンコーディングを使用
+            encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
         return len(encoding.encode(text))
 
 
@@ -141,7 +151,7 @@ def main():
     init_messages()
     chain = init_chain()
 
-    # チャット履歴の表示 (第2章から少し位置が変更になっているので注意)
+    # チャット履歴の表示
     for role, message in st.session_state.get("message_history", []):
         st.chat_message(role).markdown(message)
 
