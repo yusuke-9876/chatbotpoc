@@ -1,11 +1,8 @@
-
-anthropic==0.25.7
-google-generativeai==0.5.2
-tiktoken==0.7.0
-streamlit==1.33.0
-beautifulsoup4==4.12.2
-langchain==0.2.17
-langchain-community==0.0.34
-langchain-core==0.2.43
-openai>=0.27.0
-langchain>=0.0.200
+# requirements.txt (すべて最新を使用したい場合の例)
+streamlit
+openai
+anthropic
+google-generativeai
+tiktoken
+langchain
+beautifulsoup4
